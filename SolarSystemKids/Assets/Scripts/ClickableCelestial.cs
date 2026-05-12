@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// Detects a click on a celestial body and triggers:
+///  - a sound effect
+///  - an emissive highlight
+///  - the camera focus + info panel
 [RequireComponent(typeof(Collider))]
 public class ClickableCelestial : MonoBehaviour
 {
@@ -22,10 +26,10 @@ public class ClickableCelestial : MonoBehaviour
     public Text titleText;
     public GameObject infoPanel;
 
-    private Renderer rend;
-    private Color originalEmission;
-    private bool hasEmission;
-    private AudioSource audioSource;
+    Renderer rend;
+    Color originalEmission;
+    bool hasEmission;
+    AudioSource audioSource;
 
     void Start()
     {
@@ -48,9 +52,7 @@ public class ClickableCelestial : MonoBehaviour
     void OnMouseDown()
     {
         if (clickSound != null) audioSource.PlayOneShot(clickSound);
-
         SetHighlight(true);
-
         if (cameraController != null)
             cameraController.FocusOn(transform, this);
     }

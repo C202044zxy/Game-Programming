@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+/// Smoothly Lerps the main camera to face a selected target,
+/// and Lerps it back to the home view on Back / ESC.
 public class CameraFocusController : MonoBehaviour
 {
     [Header("Smoothing")]
@@ -8,20 +10,20 @@ public class CameraFocusController : MonoBehaviour
     public float rotateSpeed = 4f;
 
     [Header("Focus Settings")]
-    public float focusDistance = 4f;
-    public float focusHeight = 1f;
+    public float focusDistance = 5f;
+    public float focusHeight = 1.5f;
 
     [Header("UI")]
     public Button backButton;
 
-    private Vector3 homePosition;
-    private Quaternion homeRotation;
+    Vector3 homePosition;
+    Quaternion homeRotation;
 
-    private Vector3 targetPosition;
-    private Quaternion targetRotation;
-    private Transform focusTarget;
-    private ClickableCelestial currentCelestial;
-    private bool isFocused;
+    Vector3 targetPosition;
+    Quaternion targetRotation;
+    Transform focusTarget;
+    ClickableCelestial currentCelestial;
+    bool isFocused;
 
     void Start()
     {
@@ -72,7 +74,6 @@ public class CameraFocusController : MonoBehaviour
         targetPosition = target.position + dir * focusDistance + Vector3.up * focusHeight;
 
         celestial.ShowInfo();
-
         if (backButton != null) backButton.gameObject.SetActive(true);
     }
 

@@ -1,16 +1,16 @@
 # Unity generated folders
-2DGame/Library/
-2DGame/Temp/
-2DGame/Obj/
-2DGame/Build/
-2DGame/Builds/
-2DGame/Logs/
-2DGame/UserSettings/
-2DGame/MemoryCaptures/
-2DGame/Recordings/
+*/Library/
+*/Temp/
+*/Obj/
+*/Build/
+*/Builds/
+*/Logs/
+*/UserSettings/
+*/MemoryCaptures/
+*/Recordings/
 
 # Asset meta data sometimes gets generated and should be ignored if cache only
-2DGame/Assets/AssetStoreTools*
+*/Assets/AssetStoreTools*
 
 # Visual Studio / Rider / VS Code
 .vs/
