@@ -48,7 +48,7 @@ public class GameManager : MonoBehaviour
         int count = SceneManager.sceneCountInBuildSettings;
         for (int i = 0; i < count; i++)
         {
-            if (SceneUtility.GetScenePathByIndex(i).EndsWith("WinScene.unity"))
+            if (SceneUtility.GetScenePathByBuildIndex(i).EndsWith("WinScene.unity"))
             {
                 SceneManager.LoadScene(i);
                 return;
