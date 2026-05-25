@@ -3,49 +3,38 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("Swimming")]
-    [SerializeField] float swimForce = 12f;
-    [SerializeField] float maxSpeed = 6f;
+    [Header("Swim Tuning")]
+    public float thrust = 18f;
+    public float topSpeed = 5.5f;
+    public float waterDrag = 2.4f;
 
-    [Header("Sprite")]
-    [SerializeField] SpriteRenderer spriteRenderer;
-
-    Rigidbody2D rb;
-    Vector2 inputDir;
+    Rigidbody2D body;
+    Vector2 inputAxis;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        // Gravity is already 0 in Physics2D settings, but enforce it here too
-        rb.gravityScale = 0f;
-        // Linear drag creates the floaty drift-to-stop feel
-        rb.linearDamping = 2.5f;
+        body = GetComponent<Rigidbody2D>();
+        body.gravityScale = 0f;
+        body.drag = waterDrag;
+        body.angularDrag = 4f;
+        body.freezeRotation = true;
+        body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
     }
 
     void Update()
     {
-        inputDir = new Vector2(
-            Input.GetAxisRaw("Horizontal"),
-            Input.GetAxisRaw("Vertical")
-        ).normalized;
-
-        FlipSprite();
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+        Vector2 raw = new Vector2(h, v);
+        inputAxis = raw.sqrMagnitude > 1f ? raw.normalized : raw;
     }
 
     void FixedUpdate()
     {
-        if (inputDir != Vector2.zero)
-            rb.AddForce(inputDir * swimForce, ForceMode2D.Force);
+        if (inputAxis.sqrMagnitude > 0.0001f)
+            body.AddForce(inputAxis * thrust, ForceMode2D.Force);
 
-        // Clamp speed so the player cannot accelerate forever
-        if (rb.linearVelocity.magnitude > maxSpeed)
-            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
-    }
-
-    void FlipSprite()
-    {
-        if (spriteRenderer == null) return;
-        if (inputDir.x > 0) spriteRenderer.flipX = false;
-        else if (inputDir.x < 0) spriteRenderer.flipX = true;
+        if (body.velocity.magnitude > topSpeed)
+            body.velocity = body.velocity.normalized * topSpeed;
     }
 }

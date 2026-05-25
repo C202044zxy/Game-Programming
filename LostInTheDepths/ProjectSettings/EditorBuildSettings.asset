@@ -7,8 +7,5 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/GameScene.unity
-    guid: 00000000000000000000000000000001
-  - enabled: 1
-    path: Assets/Scenes/WinScene.unity
-    guid: 00000000000000000000000000000002
+    guid: c1200000000000000000000000000001
   m_configObjects: {}
