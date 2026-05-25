@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     float startTime;
 
     public int CollectedPearls => collectedPearls;
-    public float ElapsedTime => Time.time - startTime;
+    public float ElapsedTime   => Time.time - startTime;
 
     void Awake()
     {
@@ -21,31 +21,40 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         totalPearls = FindObjectsByType<Pearl>(FindObjectsSortMode.None).Length;
-        startTime = Time.time;
+        startTime   = Time.time;
     }
 
     public void OnPearlCollected()
     {
         collectedPearls++;
-        if (collectedPearls >= totalPearls)
-            OnAllPearlsCollected();
+        if (totalPearls > 0 && collectedPearls >= totalPearls)
+            ActivatePortal();
     }
 
-    void OnAllPearlsCollected()
+    void ActivatePortal()
     {
-        Portal portal = FindFirstObjectByType<Portal>();
+        var portal = FindFirstObjectByType<Portal>();
         if (portal != null) portal.Activate();
     }
 
-    public void PlayerDied()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
+    public void PlayerDied() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
     public void LoadWinScene()
     {
         PlayerPrefs.SetInt("FinalScore", collectedPearls);
         PlayerPrefs.SetFloat("FinalTime", ElapsedTime);
-        SceneManager.LoadScene("WinScene");
+        PlayerPrefs.Save();
+
+        int count = SceneManager.sceneCountInBuildSettings;
+        for (int i = 0; i < count; i++)
+        {
+            if (SceneUtility.GetScenePathByIndex(i).EndsWith("WinScene.unity"))
+            {
+                SceneManager.LoadScene(i);
+                return;
+            }
+        }
+        // WinScene not yet in build — restart current scene as fallback.
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

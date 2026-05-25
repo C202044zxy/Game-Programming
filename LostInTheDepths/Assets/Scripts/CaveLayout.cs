@@ -1,24 +1,15 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-/// <summary>
-/// Defines the cave as a 2D tile map and stamps it onto Unity tilemaps at runtime.
-/// '1' = solid wall tile, '0' = open water.
-/// Layout is 40 wide x 22 tall. Origin (0,0) is bottom-left.
-/// The figure-eight shape: left loop (cols 1-18), central corridor (cols 17-23), right loop (cols 22-39).
-/// </summary>
+// '1' = solid wall, '0' = open water. 22 rows x 40 cols, row 0 = top string → y=21 in scene.
 [RequireComponent(typeof(Grid))]
 public class CaveLayout : MonoBehaviour
 {
-    [Header("Tilemaps")]
     [SerializeField] Tilemap wallTilemap;
     [SerializeField] Tilemap backgroundTilemap;
-
-    [Header("Tiles")]
     [SerializeField] TileBase wallTile;
     [SerializeField] TileBase waterTile;
 
-    // 22 rows x 40 cols. Row 0 = bottom.
     static readonly string[] layout = {
         "1111111111111111111111111111111111111111",
         "1000000000000001100000000000000110000001",
@@ -46,8 +37,30 @@ public class CaveLayout : MonoBehaviour
 
     void Start()
     {
+        foreach (var tm in GetComponentsInChildren<Tilemap>())
+        {
+            if (tm.gameObject.name == "WallTilemap") wallTilemap = tm;
+            else if (tm.gameObject.name == "BackgroundTilemap") backgroundTilemap = tm;
+        }
+
         if (wallTilemap == null || backgroundTilemap == null) return;
+
+        if (wallTile == null) wallTile = CreateFlatTile(new Color(0.35f, 0.30f, 0.25f));
+        if (waterTile == null) waterTile = CreateFlatTile(new Color(0.15f, 0.45f, 0.80f));
+
         StampTiles();
+    }
+
+    static TileBase CreateFlatTile(Color color)
+    {
+        var tex = new Texture2D(1, 1) { filterMode = FilterMode.Point };
+        tex.SetPixel(0, 0, Color.white);
+        tex.Apply();
+        var sprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
+        var tile = ScriptableObject.CreateInstance<Tile>();
+        tile.sprite = sprite;
+        tile.color = color;
+        return tile;
     }
 
     void StampTiles()

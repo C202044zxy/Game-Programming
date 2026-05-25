@@ -1,4 +1,14 @@
 using UnityEngine;
 
-// Stub — full implementation in Week 2
-public class Pearl : MonoBehaviour { }
+[RequireComponent(typeof(CircleCollider2D))]
+public class Pearl : MonoBehaviour
+{
+    void Awake() => GetComponent<CircleCollider2D>().isTrigger = true;
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+        GameManager.Instance.OnPearlCollected();
+        gameObject.SetActive(false);
+    }
+}
