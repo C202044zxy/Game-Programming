@@ -15,6 +15,7 @@ public class Predator : MonoBehaviour
 
     float segmentTime; // seconds to travel A -> B
     float clock;
+    SpriteRenderer sr;
 
     public void Configure(Vector2 a, Vector2 b, float speed)
     {
@@ -25,14 +26,19 @@ public class Predator : MonoBehaviour
 
     void Awake()
     {
-        var sr = gameObject.AddComponent<SpriteRenderer>();
-        sr.sprite = RuntimeSprites.Circle(64, bodyColor);
+        sr = gameObject.AddComponent<SpriteRenderer>();
         sr.sortingOrder = 4;
-        transform.localScale = new Vector3(radius * 2f, radius * 2f, 1f);
+        if (GameArt.Apply(sr, GameArt.Predator, radius * 2f) == null)
+        {
+            // Fall back to the procedural circle if the predator art is missing.
+            sr.sprite = RuntimeSprites.Circle(64, bodyColor);
+            transform.localScale = new Vector3(radius * 2f, radius * 2f, 1f);
+        }
 
         var col = gameObject.AddComponent<CircleCollider2D>();
         col.isTrigger = true;
-        col.radius = 0.5f; // local; transform scale makes world radius == radius
+        // Keep the world collision radius at `radius` whatever scale the art chose.
+        col.radius = radius / Mathf.Max(0.0001f, transform.localScale.x);
     }
 
     void Start()
@@ -47,7 +53,13 @@ public class Predator : MonoBehaviour
         clock += Time.deltaTime;
         float t = Mathf.PingPong(clock / segmentTime, 1f);
         Vector2 pos = Vector2.Lerp(waypointA, waypointB, t);
+        Vector3 prev = transform.position;
         transform.position = new Vector3(pos.x, pos.y, 0f);
+
+        // The fish art faces right by default; flip it to lead with its head.
+        float dx = pos.x - prev.x;
+        if (sr != null && Mathf.Abs(dx) > 0.0001f)
+            sr.flipX = dx < 0f;
     }
 
     void OnTriggerEnter2D(Collider2D other)

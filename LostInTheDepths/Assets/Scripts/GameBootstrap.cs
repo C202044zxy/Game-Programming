@@ -18,6 +18,10 @@ public class GameBootstrap : MonoBehaviour
         var cave = new GameObject("Cave").AddComponent<CaveBuilder>();
         cave.transform.SetParent(transform, false);
 
+        var ambience = new GameObject("Ambience").AddComponent<UnderwaterAmbience>();
+        ambience.transform.SetParent(transform, false);
+        ambience.Build(cave.originOffset, cave.Size);
+
         var manager = new GameObject("GameManager");
         manager.transform.SetParent(transform, false);
         manager.AddComponent<GameManager>();
@@ -43,16 +47,22 @@ public class GameBootstrap : MonoBehaviour
         go.transform.position = new Vector3(spawn.x, spawn.y, 0f);
 
         var sr = go.AddComponent<SpriteRenderer>();
-        sr.sprite = RuntimeSprites.Circle(64, playerColor);
         sr.sortingOrder = 5;
-        go.transform.localScale = new Vector3(playerRadius * 2f, playerRadius * 2f, 1f);
+        if (GameArt.Apply(sr, GameArt.Fish, playerRadius * 2f) == null)
+        {
+            // Fall back to the procedural circle if the fish art is missing.
+            sr.sprite = RuntimeSprites.Circle(64, playerColor);
+            go.transform.localScale = new Vector3(playerRadius * 2f, playerRadius * 2f, 1f);
+        }
 
         var body = go.AddComponent<Rigidbody2D>();
         body.bodyType = RigidbodyType2D.Dynamic;
         body.interpolation = RigidbodyInterpolation2D.Interpolate;
 
+        // Keep the world-space collision radius at playerRadius regardless of the
+        // scale the sprite sizing chose above.
         var col = go.AddComponent<CircleCollider2D>();
-        col.radius = 0.5f;
+        col.radius = playerRadius / Mathf.Max(0.0001f, go.transform.localScale.x);
 
         go.AddComponent<PlayerController>();
         return go;
