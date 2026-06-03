@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CaveBuilder : MonoBehaviour
@@ -99,6 +100,61 @@ public class CaveBuilder : MonoBehaviour
                 col2d.size = Vector2.one;
             }
         }
+    }
+
+    /// <summary>World position of the centre of a cell in grid coordinates.</summary>
+    public Vector2 CellToWorld(int col, int worldY)
+        => new Vector2(originOffset.x + col, originOffset.y + worldY);
+
+    /// <summary>True if the given grid cell is open water (not a wall / out of bounds).</summary>
+    public bool IsOpen(int col, int worldY)
+    {
+        if (col < 0 || worldY < 0 || col >= Size.x || worldY >= Size.y) return false;
+        int row = Size.y - 1 - worldY;
+        string line = Layout[row];
+        if (col >= line.Length) return false;
+        return line[col] == '.';
+    }
+
+    /// <summary>World positions of every open cell, for scattering collectibles.</summary>
+    public List<Vector2> OpenCells()
+    {
+        var cells = new List<Vector2>();
+        for (int worldY = 0; worldY < Size.y; worldY++)
+            for (int col = 0; col < Size.x; col++)
+                if (IsOpen(col, worldY))
+                    cells.Add(CellToWorld(col, worldY));
+        return cells;
+    }
+
+    /// <summary>
+    /// Runs of horizontally-adjacent open cells at least <paramref name="minLen"/>
+    /// long, returned as (left end, right end) world positions. Used as predator
+    /// patrol lanes.
+    /// </summary>
+    public List<(Vector2 a, Vector2 b)> HorizontalCorridors(int minLen)
+    {
+        var runs = new List<(Vector2 a, Vector2 b)>();
+        for (int worldY = 0; worldY < Size.y; worldY++)
+        {
+            int start = -1;
+            for (int col = 0; col <= Size.x; col++)
+            {
+                bool open = IsOpen(col, worldY);
+                if (open && start < 0)
+                {
+                    start = col;
+                }
+                else if (!open && start >= 0)
+                {
+                    int end = col - 1;
+                    if (end - start + 1 >= minLen)
+                        runs.Add((CellToWorld(start, worldY), CellToWorld(end, worldY)));
+                    start = -1;
+                }
+            }
+        }
+        return runs;
     }
 
     Vector2 FindFirstOpenCell()
