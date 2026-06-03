@@ -11,10 +11,12 @@ using UnityEngine;
 public static class GameArt
 {
     public const string Fish = "fish";
-    public const string Predator = "predator";
+    public const string Shark = "shark";
     public const string Pearl = "pearl";
     public const string Bubble = "bubble";
     public const string Water = "bg_water";
+    public const string Rock = "rock";
+    public const string Seagrass = "seagrass";
 
     static readonly Dictionary<string, Sprite> cache = new Dictionary<string, Sprite>();
 
