@@ -9,7 +9,8 @@ public class Pearl : MonoBehaviour
 {
     public Color glowColor = new Color(0.80f, 0.95f, 1f, 1f);
     public float glowRadius = 0.55f;   // soft halo extent, world units
-    public float coreRadius = 0.16f;   // bright centre, world units
+    public float pearlSize = 0.5f;     // pearl art diameter, world units
+    public float coreRadius = 0.16f;   // procedural fallback core, world units
     public float pickupRadius = 0.40f; // trigger size, world units
 
     Transform glow;
@@ -27,12 +28,17 @@ public class Pearl : MonoBehaviour
         glowBaseScale = new Vector3(glowRadius * 2f, glowRadius * 2f, 1f);
         glow.localScale = glowBaseScale;
 
-        var core = new GameObject("Core").transform;
-        core.SetParent(transform, false);
-        var coreSr = core.gameObject.AddComponent<SpriteRenderer>();
-        coreSr.sprite = RuntimeSprites.Circle(32, Color.white);
-        coreSr.sortingOrder = 4;
-        core.localScale = new Vector3(coreRadius * 2f, coreRadius * 2f, 1f);
+        // The pearl art sits on top of the halo.
+        var pearl = new GameObject("Pearl").transform;
+        pearl.SetParent(transform, false);
+        var pearlSr = pearl.gameObject.AddComponent<SpriteRenderer>();
+        pearlSr.sortingOrder = 4;
+        if (GameArt.Apply(pearlSr, GameArt.Pearl, pearlSize) == null)
+        {
+            // Fall back to the procedural white core if the pearl art is missing.
+            pearlSr.sprite = RuntimeSprites.Circle(32, Color.white);
+            pearl.localScale = new Vector3(coreRadius * 2f, coreRadius * 2f, 1f);
+        }
 
         var col = gameObject.AddComponent<CircleCollider2D>();
         col.isTrigger = true;
