@@ -1,6 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// The single scene entry point. Runs before everything else
+/// (<see cref="DefaultExecutionOrder"/> -100) and assembles the whole game from
+/// code: it builds the cave, the ambience, the <see cref="GameManager"/>, spawns
+/// the player, seabed decorations, pearls and predators, and finally wires up the
+/// follow camera. Tunable spawn counts and look-and-feel values are exposed as
+/// fields so the level can be adjusted without touching the other scripts.
+/// </summary>
 [DefaultExecutionOrder(-100)]
 public class GameBootstrap : MonoBehaviour
 {
@@ -44,6 +52,11 @@ public class GameBootstrap : MonoBehaviour
         rig.Attach(Camera.main, player.transform);
     }
 
+    /// <summary>
+    /// Creates the player fish at <paramref name="spawn"/>: a sprite, a dynamic
+    /// gravity-free <see cref="Rigidbody2D"/>, a circle collider kept at the
+    /// intended world radius, and the <see cref="PlayerController"/>.
+    /// </summary>
     GameObject SpawnPlayer(Vector2 spawn)
     {
         var go = new GameObject("Player");
@@ -105,6 +118,11 @@ public class GameBootstrap : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Scatters <see cref="pearlCount"/> pearls through the open water, keeping
+    /// the spawn area clear and using <see cref="SpreadSelect"/> for an even
+    /// distribution.
+    /// </summary>
     void SpawnPearls(CaveBuilder cave, Vector2 playerPos)
     {
         var candidates = new List<Vector2>();
@@ -124,6 +142,11 @@ public class GameBootstrap : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Places up to <see cref="maxPredators"/> sharks on the longest horizontal
+    /// corridors, skipping lanes too close to the player's spawn or to a shark
+    /// already placed, then configures each one's patrol via <see cref="Predator.Configure"/>.
+    /// </summary>
     void SpawnPredators(CaveBuilder cave, Vector2 playerPos)
     {
         var corridors = cave.HorizontalCorridors(6);
