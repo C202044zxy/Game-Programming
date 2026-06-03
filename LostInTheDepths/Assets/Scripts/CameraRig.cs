@@ -1,6 +1,13 @@
 using Cinemachine;
 using UnityEngine;
 
+/// <summary>
+/// Wraps a Cinemachine virtual camera that smoothly follows the player. Created
+/// at runtime by <see cref="GameBootstrap"/>; call <see cref="Attach"/> to point
+/// it at the player and configure the orthographic framing. The dead/soft zones
+/// let the fish drift near screen centre without the camera reacting, then ease
+/// it back once the fish moves further out, so the view never jitters.
+/// </summary>
 public class CameraRig : MonoBehaviour
 {
     [Header("Target")]
@@ -19,6 +26,11 @@ public class CameraRig : MonoBehaviour
 
     CinemachineVirtualCamera vcam;
 
+    /// <summary>
+    /// Ensures the main camera has a <see cref="CinemachineBrain"/>, then creates
+    /// (or reuses) an orthographic virtual camera set to follow <paramref name="target"/>
+    /// with the framing values configured on this component.
+    /// </summary>
     public void Attach(Camera mainCamera, Transform target)
     {
         follow = target;

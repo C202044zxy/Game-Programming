@@ -1,5 +1,13 @@
 using UnityEngine;
 
+/// <summary>
+/// Drives the player fish. Reads the WASD / arrow input each frame and, in
+/// <see cref="FixedUpdate"/>, applies a thrust force to the <see cref="Rigidbody2D"/>
+/// while capping it at <see cref="topSpeed"/>. Movement feels swim-like because
+/// gravity is off and the body uses water drag (set in <see cref="Awake"/>), so
+/// the fish coasts to a stop when input is released. The sprite is flipped to
+/// face its direction of travel.
+/// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
