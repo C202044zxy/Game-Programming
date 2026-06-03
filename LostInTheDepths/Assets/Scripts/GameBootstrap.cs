@@ -13,6 +13,9 @@ public class GameBootstrap : MonoBehaviour
     public int maxPredators = 3;
     public float predatorSpeed = 1.8f;
 
+    [Header("Seabed Decoration")]
+    [Range(0f, 1f)] public float decorationDensity = 0.4f;
+
     void Start()
     {
         var cave = new GameObject("Cave").AddComponent<CaveBuilder>();
@@ -28,6 +31,7 @@ public class GameBootstrap : MonoBehaviour
 
         var player = SpawnPlayer(cave.SpawnPoint);
 
+        SpawnDecorations(cave, player.transform.position);
         SpawnPearls(cave, player.transform.position);
         SpawnPredators(cave, player.transform.position);
 
@@ -66,6 +70,39 @@ public class GameBootstrap : MonoBehaviour
 
         go.AddComponent<PlayerController>();
         return go;
+    }
+
+    /// <summary>
+    /// Plants rocks and seagrass on the seabed (floor surface and reef tops) so
+    /// the scene reads as a real underwater environment. Each decoration rests
+    /// its base on the rock below it and sits behind the gameplay actors.
+    /// </summary>
+    void SpawnDecorations(CaveBuilder cave, Vector2 playerPos)
+    {
+        var group = new GameObject("Decorations");
+        group.transform.SetParent(transform, false);
+
+        foreach (var cell in cave.FloorSurfaceCells())
+        {
+            if (Random.value > decorationDensity) continue;
+            if (Vector2.Distance(cell, playerPos) < 2.5f) continue; // keep spawn clear
+
+            bool grass = Random.value < 0.6f;
+            string art = grass ? GameArt.Seagrass : GameArt.Rock;
+            float worldSize = grass ? Random.Range(1.0f, 1.5f) : Random.Range(0.8f, 1.3f);
+
+            var go = new GameObject(grass ? "Seagrass" : "Rock");
+            go.transform.SetParent(group.transform, false);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 1; // in front of the rock mass, behind bubbles/pearls/fish
+            if (GameArt.Apply(sr, art, worldSize) == null) continue;
+            if (Random.value < 0.5f) sr.flipX = true;
+
+            // Rest the decoration's base on the top surface of the floor cell.
+            float floorTop = cell.y - 0.5f;
+            go.transform.position = new Vector3(cell.x, floorTop + sr.bounds.extents.y, 0f);
+        }
     }
 
     void SpawnPearls(CaveBuilder cave, Vector2 playerPos)
