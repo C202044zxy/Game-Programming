@@ -10,15 +10,20 @@ avoiding the patrolling sharks. Swim into a shark and the level restarts.
 |--------|------------------------------|
 | Swim   | `WASD` or the arrow keys     |
 
-Collect every pearl (shown as `Pearls n / total` in the top-left) to clear the
-level. The exit / win flow lands in a later milestone.
+Collect every pearl (shown as `Pearls n / total` in the top-left). The last one
+opens the exit portal back at your starting point — swim into it to escape and
+reach the win screen, which shows your final score and time. Swim into a shark
+and the level restarts. All sound is generated procedurally in code, so the game
+ships with no audio files.
 
 ## How it's built
 
 The game is assembled entirely from code at runtime. The scene
 (`Assets/Scenes/GameScene.unity`) contains a single `GameBootstrap` component;
-on `Start` it builds the cave, ambience, HUD, player, pearls, sharks and follow
-camera. There are no prefabs or manual Inspector wiring to maintain.
+on `Start` it builds the cave, ambience, HUD, player, pearls, sharks, the exit
+portal and the follow camera. There are no prefabs or manual Inspector wiring to
+maintain. A second scene (`Assets/Scenes/WinScene.unity`) holds the results
+screen and is loaded when the player escapes through the portal.
 
 See [`Assets/Scripts/README.md`](Assets/Scripts/README.md) for a per-class
 breakdown of the gameplay code and the startup flow.
@@ -29,7 +34,8 @@ breakdown of the gameplay code and the startup flow.
 LostInTheDepths/
 ├── Assets/
 │   ├── Scenes/
-│   │   └── GameScene.unity ...... the one scene; holds a GameBootstrap
+│   │   ├── GameScene.unity ...... the playable level; holds a GameBootstrap
+│   │   └── WinScene.unity ....... results screen; holds a WinScreen
 │   ├── Scripts/
 │   │   ├── *.cs ................. gameplay code (see Scripts/README.md)
 │   │   └── README.md ........... per-class documentation

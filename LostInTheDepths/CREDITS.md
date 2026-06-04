@@ -9,7 +9,8 @@ coursework, written from scratch for the Week 1 milestone.
 
 - Unity 2022.3.62f1 (Personal licence) — Unity Technologies
 - `com.unity.cinemachine` 2.9.7 — virtual camera follow
-- `com.unity.textmeshpro` 3.0.6 — reserved for Week 3 UI
+- `com.unity.textmeshpro` 3.0.6 — available; the HUD and win screen use Unity's
+  built-in UI `Text` for consistency with the runtime-built UI
 - `com.unity.2d.sprite`, `com.unity.2d.tilemap` — 2D feature set
 
 ## Art
@@ -31,4 +32,8 @@ behind each pearl and a fallback shape if any art fails to load.
 
 ## Audio
 
-None yet. Audio (background loop + sfxr/bfxr effects) lands in Week 3.
+All sound is original and **synthesised in code at runtime** by `SoundFX.cs` —
+the audio counterpart to `RuntimeSprites.cs`. No external audio files are
+imported or distributed. The ambient drone, pearl chime, portal cue, death sting
+and win jingle are each generated procedurally from sine partials and envelopes,
+so there are no third-party licences to track.

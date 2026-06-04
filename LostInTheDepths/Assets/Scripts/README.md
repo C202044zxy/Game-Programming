@@ -12,13 +12,20 @@ GameScene
   └── GameBootstrap (DefaultExecutionOrder -100)
         ├── CaveBuilder ............ generates terrain, exposes spawn queries
         ├── UnderwaterAmbience ..... water backdrop + drifting bubbles
-        ├── GameManager ............ score state + HUD
+        ├── GameManager ............ score + time state, HUD, win/death flow
         ├── Player ................. SpriteRenderer + Rigidbody2D + PlayerController
         ├── Decorations ............ rocks / seagrass on the seabed
-        ├── Pearls ................. collectibles (Pearl)
+        ├── Pearls ................. collectibles (Pearl) → CollectBurst + chime
         ├── Predators .............. patrolling sharks (Predator)
+        ├── Portal ................. exit; opens once every pearl is collected
         └── CameraRig .............. Cinemachine follow camera
+
+WinScene
+  └── WinScreen .................... results (score + time) + win jingle
 ```
+
+Audio is generated in code by `SoundFX` (no imported clips); collecting the last
+pearl opens the `Portal`, and swimming into it loads `WinScene`.
 
 `GameBootstrap` builds the `CaveBuilder` first, then asks it where the player
 can spawn and where pearls and predators should go. Each spawned object is
@@ -86,10 +93,45 @@ into it before destroying itself.
 ### `GameManager.cs`
 Singleton (`GameManager.Instance`) holding the run-time game state. Tracks the
 pearl `Total` / `Collected` (`AllCollected` is true once every pearl is taken),
-owns the on-screen score HUD, and restarts the level on `PlayerDied()`.
+owns the on-screen score HUD, starts the ambient loop, plays the death sting and
+restarts the level on `PlayerDied()`, and on `WinAndExit()` snapshots the final
+score and time into static `Result*` fields before loading `WinScene`.
 
 - **Interface:** `RegisterPearl()`, `CollectPearl()`, `PlayerDied()`,
-  properties `Total`, `Collected`, `AllCollected`.
+  `WinAndExit()`, properties `Total`, `Collected`, `AllCollected`, and statics
+  `ResultCollected`, `ResultTotal`, `ResultTime`.
+
+### `Portal.cs`
+The level exit, spawned dormant at the player's spawn point. It watches
+`GameManager.AllCollected` each frame; the moment the last pearl is taken it
+brightens, swirls, pulses and plays a one-off cue (`SoundFX.PlayPortalReady`).
+Once active, the player swimming into it calls `GameManager.WinAndExit()`.
+
+- **Tunables:** `dormantColor`, `activeColor`, `radius`, `spinSpeed`.
+
+### `WinScreen.cs`
+The single component in `WinScene`. Reads the carried-over `GameManager.Result*`
+statics, stops the ambience, plays the win jingle, and builds a code-driven
+results screen (title, pearls collected, time taken). Any key reloads
+`GameScene` for another run.
+
+### `SoundFX.cs`
+Procedural audio — the audio counterpart to `RuntimeSprites`. Synthesises every
+clip (ambient drone, pearl chime, portal cue, death sting, win jingle) in C# from
+sine partials and envelopes, so no audio assets are imported. A hidden
+`DontDestroyOnLoad` host owns a looping ambience source and a one-shot source, so
+a sting can finish across a scene reload and the drone carries seamlessly.
+
+- **Interface:** `PlayChime()`, `PlayPortalReady()`, `PlayDeath()`, `PlayWin()`,
+  `StartAmbience()`, `StopAmbience()`.
+
+### `CollectBurst.cs`
+A short-lived particle burst played where a pearl was collected. Builds and
+configures its own `ParticleSystem` in `Awake`, emits one burst of fading
+sparkles, and removes itself when finished. `Pearl` spawns it on a free-standing
+object so it outlives the pearl.
+
+- **Tunables:** `color`, `count`, `lifetime`, `speed`, `size`.
 
 ### `CameraRig.cs`
 Wraps a Cinemachine orthographic virtual camera that smoothly follows the
@@ -133,6 +175,7 @@ Layering is set by `SpriteRenderer.sortingOrder` (higher = nearer the camera):
 |    0  | Cave walls                              |
 |    1  | Seabed decorations (rock / seagrass)    |
 |    2  | Bubbles                                 |
-|    3  | Pearl glow halo                         |
-|    4  | Pearl core / shark                      |
+|    3  | Pearl glow halo / portal halo           |
+|    4  | Pearl core / shark / portal core        |
 |    5  | Player fish                             |
+|    6  | Pearl collection particle burst         |
