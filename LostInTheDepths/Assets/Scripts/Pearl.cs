@@ -68,11 +68,13 @@ public class Pearl : MonoBehaviour
             GameManager.Instance.CollectPearl();
 
         // Sparkle + chime feedback. The burst is its own free-standing object so it
-        // outlives the pearl, which destroys itself immediately.
+        // outlives the pearl, which destroys itself immediately. It is created
+        // inactive so the colour is set before CollectBurst.Awake builds the system.
         var burst = new GameObject("CollectBurst");
+        burst.SetActive(false);
         burst.transform.position = transform.position;
-        var fx = burst.AddComponent<CollectBurst>();
-        fx.color = glowColor;
+        burst.AddComponent<CollectBurst>().color = glowColor;
+        burst.SetActive(true);
         SoundFX.PlayChime();
 
         Destroy(gameObject);
