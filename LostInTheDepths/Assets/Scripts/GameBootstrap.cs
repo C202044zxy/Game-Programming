@@ -42,6 +42,7 @@ public class GameBootstrap : MonoBehaviour
         SpawnDecorations(cave, player.transform.position);
         SpawnPearls(cave, player.transform.position);
         SpawnPredators(cave, player.transform.position);
+        SpawnPortal(cave.SpawnPoint);
 
         var rigGo = new GameObject("CameraRig");
         rigGo.transform.SetParent(transform, false);
@@ -180,6 +181,19 @@ public class GameBootstrap : MonoBehaviour
             var pred = go.AddComponent<Predator>();
             pred.Configure(chosen[i].a, chosen[i].b, predatorSpeed + 0.3f * i);
         }
+    }
+
+    /// <summary>
+    /// Places the exit <see cref="Portal"/> at the player's spawn point. It starts
+    /// dormant and opens itself once every pearl is collected, so the level forms a
+    /// there-and-back loop: swim out to gather pearls, swim home to escape.
+    /// </summary>
+    void SpawnPortal(Vector2 spawn)
+    {
+        var go = new GameObject("Portal");
+        go.transform.SetParent(transform, false);
+        go.transform.position = new Vector3(spawn.x, spawn.y, 0f);
+        go.AddComponent<Portal>();
     }
 
     /// <summary>

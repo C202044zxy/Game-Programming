@@ -66,7 +66,17 @@ public class Pearl : MonoBehaviour
         collected = true;
         if (GameManager.Instance != null)
             GameManager.Instance.CollectPearl();
-        // Week 3: spawn particle burst + chime here before destroying.
+
+        // Sparkle + chime feedback. The burst is its own free-standing object so it
+        // outlives the pearl, which destroys itself immediately. It is created
+        // inactive so the colour is set before CollectBurst.Awake builds the system.
+        var burst = new GameObject("CollectBurst");
+        burst.SetActive(false);
+        burst.transform.position = transform.position;
+        burst.AddComponent<CollectBurst>().color = glowColor;
+        burst.SetActive(true);
+        SoundFX.PlayChime();
+
         Destroy(gameObject);
     }
 }

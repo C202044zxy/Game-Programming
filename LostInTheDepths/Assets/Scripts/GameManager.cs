@@ -15,6 +15,12 @@ public class GameManager : MonoBehaviour
     public int Collected { get; private set; }
     public bool AllCollected => Total > 0 && Collected >= Total;
 
+    // Final run results, carried into the win scene. Statics survive the scene
+    // load, so the (camera-only) win scene can read them without a live manager.
+    public static int ResultCollected { get; private set; }
+    public static int ResultTotal { get; private set; }
+    public static float ResultTime { get; private set; }
+
     Text scoreLabel;
 
     void Awake()
@@ -26,6 +32,7 @@ public class GameManager : MonoBehaviour
         }
         Instance = this;
         BuildHud();
+        SoundFX.StartAmbience();
     }
 
     void OnDestroy()
@@ -40,18 +47,34 @@ public class GameManager : MonoBehaviour
         UpdateLabel();
     }
 
-    /// <summary>Called when the player swims into a pearl.</summary>
+    /// <summary>
+    /// Called when the player swims into a pearl. The <see cref="Portal"/> watches
+    /// <see cref="AllCollected"/> and opens itself once the last one is taken.
+    /// </summary>
     public void CollectPearl()
     {
         Collected = Mathf.Min(Collected + 1, Total);
         UpdateLabel();
-        // Week 3: when AllCollected becomes true, activate the exit portal here.
     }
 
     /// <summary>Predator contact: restart the level. Fast loop, no penalty screen.</summary>
     public void PlayerDied()
     {
+        SoundFX.PlayDeath();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    /// <summary>
+    /// The player entered the active portal: snapshot the score and elapsed time
+    /// and hand off to the win scene. <c>timeSinceLevelLoad</c> is the run length,
+    /// since each death reloads the scene and restarts the clock.
+    /// </summary>
+    public void WinAndExit()
+    {
+        ResultCollected = Collected;
+        ResultTotal = Total;
+        ResultTime = Time.timeSinceLevelLoad;
+        SceneManager.LoadScene("WinScene");
     }
 
     void BuildHud()
