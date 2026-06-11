@@ -16,6 +16,16 @@ reach the win screen, which shows your final score and time. Swim into a shark
 and the level restarts. All sound is generated procedurally in code, so the game
 ships with no audio files.
 
+Scattered through the reef are two **Blessings of the Fish** — glowing orbs that
+grant a short power when collected:
+
+- **Speed Up** (cyan) — the fish surges to roughly 1.8× speed for ~6 seconds.
+- **Disguise** (violet) — predators lose your trail for ~6 seconds; while it
+  lasts they won't chase you and can't catch you even on contact.
+
+While a blessing is active the fish is tinted (a bright cyan glow for speed, a
+translucent shimmer for disguise).
+
 ## How it's built
 
 The game is assembled entirely from code at runtime. The scene

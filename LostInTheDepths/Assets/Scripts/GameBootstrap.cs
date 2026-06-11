@@ -20,6 +20,7 @@ public class GameBootstrap : MonoBehaviour
     public int pearlCount = 12;
     public int maxPredators = 3;
     public float predatorSpeed = 1.8f;
+    public int blessingsPerType = 2; // speed + disguise blessings scattered like pearls
 
     [Header("Seabed Decoration")]
     [Range(0f, 1f)] public float decorationDensity = 0.4f;
@@ -41,6 +42,7 @@ public class GameBootstrap : MonoBehaviour
 
         SpawnDecorations(cave, player.transform.position);
         SpawnPearls(cave, player.transform.position);
+        SpawnBlessings(cave, player.transform.position);
         SpawnPredators(cave, player.transform.position);
         SpawnPortal(cave.SpawnPoint);
 
@@ -83,6 +85,9 @@ public class GameBootstrap : MonoBehaviour
         col.radius = playerRadius / Mathf.Max(0.0001f, go.transform.localScale.x);
 
         go.AddComponent<PlayerController>();
+        // Manages the temporary "Blessing of the Fish" powers (added after the
+        // controller so its Awake can find it).
+        go.AddComponent<BlessingEffects>();
         return go;
     }
 
@@ -140,6 +145,36 @@ public class GameBootstrap : MonoBehaviour
             go.transform.SetParent(group.transform, false);
             go.transform.position = new Vector3(pos.x, pos.y, 0f);
             go.AddComponent<Pearl>();
+        }
+    }
+
+    /// <summary>
+    /// Scatters <see cref="blessingsPerType"/> of each blessing type through the
+    /// open water (away from the spawn), spread evenly like pearls. These are
+    /// one-time power-ups and do not count toward the pearl total. Each object is
+    /// created inactive so its <see cref="BlessingType"/> is set before
+    /// <see cref="Blessing.Awake"/> builds its (type-coloured) visuals.
+    /// </summary>
+    void SpawnBlessings(CaveBuilder cave, Vector2 playerPos)
+    {
+        var candidates = new List<Vector2>();
+        foreach (var cell in cave.OpenCells())
+            if (Vector2.Distance(cell, playerPos) > 2.5f) // keep spawn area clear
+                candidates.Add(cell);
+
+        var group = new GameObject("Blessings");
+        group.transform.SetParent(transform, false);
+
+        var spots = SpreadSelect(candidates, playerPos, blessingsPerType * 2);
+        for (int i = 0; i < spots.Count; i++)
+        {
+            var go = new GameObject("Blessing");
+            go.SetActive(false);
+            go.transform.SetParent(group.transform, false);
+            go.transform.position = new Vector3(spots[i].x, spots[i].y, 0f);
+            var blessing = go.AddComponent<Blessing>();
+            blessing.type = (i % 2 == 0) ? BlessingType.Speed : BlessingType.Disguise;
+            go.SetActive(true);
         }
     }
 

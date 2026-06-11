@@ -16,6 +16,7 @@ GameScene
         ├── Player ................. SpriteRenderer + Rigidbody2D + PlayerController
         ├── Decorations ............ rocks / seagrass on the seabed
         ├── Pearls ................. collectibles (Pearl) → CollectBurst + chime
+        ├── Blessings .............. power-ups (Blessing) → BlessingEffects on the fish
         ├── Predators .............. patrolling sharks (Predator)
         ├── Portal ................. exit; opens once every pearl is collected
         └── CameraRig .............. Cinemachine follow camera
@@ -38,11 +39,11 @@ component.
 ### `GameBootstrap.cs`
 The single scene entry point. Runs before everything else and wires the whole
 game together: builds the cave and ambience, creates the `GameManager`, spawns
-the player, seabed decorations, pearls and predators, then attaches the follow
-camera.
+the player, seabed decorations, pearls, blessings and predators, then attaches
+the follow camera.
 
 - **Tunables (Inspector):** `playerColor`, `playerRadius`, `pearlCount`,
-  `maxPredators`, `predatorSpeed`, `decorationDensity`.
+  `maxPredators`, `predatorSpeed`, `blessingsPerType`, `decorationDensity`.
 - **Key logic:** `SpreadSelect` does greedy farthest-point sampling so pearls
   spread evenly instead of clustering; predator lanes are chosen longest-first
   and kept clear of the player's spawn and of each other.
@@ -69,6 +70,8 @@ and water drag makes the fish coast to a stop, giving a swim-like feel. Flips th
 sprite to face the travel direction.
 
 - **Tunables:** `thrust`, `topSpeed`, `waterDrag`.
+- **`SpeedMultiplier`:** scales thrust and the speed cap; the speed `Blessing`
+  raises it for a short burst (otherwise 1).
 
 ### `Predator.cs`
 A shark enemy with a small state machine — **Patrol → Chase → Return**. It
@@ -76,6 +79,8 @@ ping-pongs along its assigned lane until the player enters `detectRange`, then
 lunges at `speed * chaseMultiplier`; once the player passes `loseRange`
 (hysteresis so it doesn't flicker) it returns to the nearest lane point and
 resumes patrolling. Contact with the player triggers `GameManager.PlayerDied()`.
+While the player holds the disguise `Blessing` (`BlessingEffects.IsDisguised`)
+the shark can't perceive it: it never starts a chase and contact is harmless.
 
 - **Setup:** `Configure(a, b, speed)` is called by the bootstrap with the lane
   endpoints and patrol speed.
@@ -89,6 +94,26 @@ into it before destroying itself.
 
 - **Tunables:** `glowColor`, `glowRadius`, `pearlSize`, `coreRadius`,
   `pickupRadius`.
+
+### `Blessing.cs`
+A "Blessing of the Fish" power-up collectible. Like a pearl it builds its own
+glowing visuals and a trigger collider, but instead of scoring it grants the
+player a temporary power and destroys itself. Its colour comes from its
+`BlessingType` (cyan = speed, violet = disguise). Picking one up finds (or adds)
+the `BlessingEffects` on the player and calls `Grant`.
+
+- **Tunables:** `type`, `duration`, `glowRadius`, `coreRadius`, `pickupRadius`.
+
+### `BlessingEffects.cs`
+Lives on the player fish and tracks the two temporary powers. Each blessing runs
+on its own countdown so they can overlap; while active it drives the player's
+`SpeedMultiplier` and tints the sprite (bright cyan for speed, translucent for
+disguise). `IsDisguised` is polled by `Predator` so a disguised fish is neither
+chased nor killed on contact.
+
+- **Interface:** `Grant(type, duration)`, properties `IsDisguised`, `SpeedActive`.
+- **Tunables:** `speedMultiplier`, `speedTint`, `disguiseAlpha`.
+- **`BlessingType` enum:** `Speed`, `Disguise`.
 
 ### `GameManager.cs`
 Singleton (`GameManager.Instance`) holding the run-time game state. Tracks the
@@ -175,7 +200,7 @@ Layering is set by `SpriteRenderer.sortingOrder` (higher = nearer the camera):
 |    0  | Cave walls                              |
 |    1  | Seabed decorations (rock / seagrass)    |
 |    2  | Bubbles                                 |
-|    3  | Pearl glow halo / portal halo           |
-|    4  | Pearl core / shark / portal core        |
+|    3  | Pearl / blessing glow halo / portal halo |
+|    4  | Pearl / blessing core / shark / portal core |
 |    5  | Player fish                             |
 |    6  | Pearl collection particle burst         |

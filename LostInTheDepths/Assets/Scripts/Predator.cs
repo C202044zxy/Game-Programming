@@ -26,6 +26,14 @@ public class Predator : MonoBehaviour
     float clock;
     SpriteRenderer sr;
     Transform player;
+    BlessingEffects targetEffects;
+
+    /// <summary>
+    /// Whether the shark can currently perceive the fish. A fish under the
+    /// disguise blessing is invisible to predators, so it is never chased.
+    /// </summary>
+    bool CanSeePlayer =>
+        player != null && (targetEffects == null || !targetEffects.IsDisguised);
 
     public void Configure(Vector2 a, Vector2 b, float speed)
     {
@@ -58,7 +66,11 @@ public class Predator : MonoBehaviour
         transform.position = waypointA;
 
         var playerGo = GameObject.FindGameObjectWithTag("Player");
-        if (playerGo != null) player = playerGo.transform;
+        if (playerGo != null)
+        {
+            player = playerGo.transform;
+            targetEffects = playerGo.GetComponent<BlessingEffects>();
+        }
     }
 
     void Update()
@@ -74,19 +86,25 @@ public class Predator : MonoBehaviour
         {
             case State.Patrol:
                 next = PatrolStep();
-                if (toPlayer <= detectRange) state = State.Chase;
+                if (CanSeePlayer && toPlayer <= detectRange) state = State.Chase;
                 break;
 
             case State.Chase:
-                next = Vector2.MoveTowards(prev, player.position,
-                                           speed * chaseMultiplier * Time.deltaTime);
-                if (toPlayer > loseRange || player == null) state = State.Return;
+                if (!CanSeePlayer || toPlayer > loseRange)
+                {
+                    state = State.Return;
+                }
+                else
+                {
+                    next = Vector2.MoveTowards(prev, player.position,
+                                               speed * chaseMultiplier * Time.deltaTime);
+                }
                 break;
 
             case State.Return:
                 Vector2 home = NearestPointOnLane(prev);
                 next = Vector2.MoveTowards(prev, home, speed * Time.deltaTime);
-                if (toPlayer <= detectRange)
+                if (CanSeePlayer && toPlayer <= detectRange)
                 {
                     state = State.Chase;
                 }
@@ -137,6 +155,8 @@ public class Predator : MonoBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player")) return;
+        // A disguised fish is imperceptible, so even bumping a shark is harmless.
+        if (targetEffects != null && targetEffects.IsDisguised) return;
         if (GameManager.Instance != null)
             GameManager.Instance.PlayerDied();
     }
