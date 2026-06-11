@@ -8,6 +8,9 @@ manual references to drag in the Inspector.
 ## Startup flow
 
 ```
+StartScene  (first in the build order — the launch screen)
+  └── MainMenu ...................... title + Start button → loads GameScene
+
 GameScene
   └── GameBootstrap (DefaultExecutionOrder -100)
         ├── CaveBuilder ............ generates terrain, exposes spawn queries
@@ -35,6 +38,14 @@ self-contained: it builds its own visuals, colliders and behaviour in `Awake`
 component.
 
 ## Files
+
+### `MainMenu.cs`
+The single component in `StartScene` (the first scene in the build order, so it
+is what the player sees on launch). Built from code in the same style as
+`WinScreen`: it shows the game title, a tagline and a clickable **Start** button,
+adds an `EventSystem` so the button can receive clicks, and loads `GameScene`
+when Start is clicked (or Enter / Space is pressed). The button gently pulses
+while waiting.
 
 ### `GameBootstrap.cs`
 The single scene entry point. Runs before everything else and wires the whole
