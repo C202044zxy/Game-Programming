@@ -118,9 +118,11 @@ chased nor killed on contact.
 ### `GameManager.cs`
 Singleton (`GameManager.Instance`) holding the run-time game state. Tracks the
 pearl `Total` / `Collected` (`AllCollected` is true once every pearl is taken),
-owns the on-screen score HUD, starts the ambient loop, plays the death sting and
-restarts the level on `PlayerDied()`, and on `WinAndExit()` snapshots the final
-score and time into static `Result*` fields before loading `WinScene`.
+owns the on-screen score HUD plus a hidden "swim back to the portal" prompt that
+is revealed the moment the last pearl is collected, starts the ambient loop,
+plays the death sting and restarts the level on `PlayerDied()`, and on
+`WinAndExit()` snapshots the final score and time into static `Result*` fields
+before loading `WinScene`.
 
 - **Interface:** `RegisterPearl()`, `CollectPearl()`, `PlayerDied()`,
   `WinAndExit()`, properties `Total`, `Collected`, `AllCollected`, and statics
