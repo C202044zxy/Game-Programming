@@ -16,6 +16,12 @@ public class PlayerController : MonoBehaviour
     public float topSpeed = 5.5f;
     public float waterDrag = 2.4f;
 
+    /// <summary>
+    /// Scales both thrust and the speed cap. Left at 1 normally; the speed
+    /// <see cref="BlessingEffects">blessing</see> raises it for a short burst.
+    /// </summary>
+    public float SpeedMultiplier { get; set; } = 1f;
+
     Rigidbody2D body;
     SpriteRenderer sprite;
     Vector2 inputAxis;
@@ -46,9 +52,10 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if (inputAxis.sqrMagnitude > 0.0001f)
-            body.AddForce(inputAxis * thrust, ForceMode2D.Force);
+            body.AddForce(inputAxis * thrust * SpeedMultiplier, ForceMode2D.Force);
 
-        if (body.velocity.magnitude > topSpeed)
-            body.velocity = body.velocity.normalized * topSpeed;
+        float cap = topSpeed * SpeedMultiplier;
+        if (body.velocity.magnitude > cap)
+            body.velocity = body.velocity.normalized * cap;
     }
 }
