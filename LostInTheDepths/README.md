@@ -28,11 +28,14 @@ translucent shimmer for disguise).
 
 ## How it's built
 
-The game is assembled entirely from code at runtime. The scene
+The game is assembled entirely from code at runtime. Launching the game opens
+`Assets/Scenes/StartScene.unity`, a code-built start menu (a single `MainMenu`
+component) showing the title and a **Start** button — clicking Start (or pressing
+Enter / Space) loads the playable level. That level
 (`Assets/Scenes/GameScene.unity`) contains a single `GameBootstrap` component;
 on `Start` it builds the cave, ambience, HUD, player, pearls, sharks, the exit
 portal and the follow camera. There are no prefabs or manual Inspector wiring to
-maintain. A second scene (`Assets/Scenes/WinScene.unity`) holds the results
+maintain. A third scene (`Assets/Scenes/WinScene.unity`) holds the results
 screen and is loaded when the player escapes through the portal.
 
 See [`Assets/Scripts/README.md`](Assets/Scripts/README.md) for a per-class
@@ -44,6 +47,7 @@ breakdown of the gameplay code and the startup flow.
 LostInTheDepths/
 ├── Assets/
 │   ├── Scenes/
+│   │   ├── StartScene.unity ..... start menu; holds a MainMenu (first to load)
 │   │   ├── GameScene.unity ...... the playable level; holds a GameBootstrap
 │   │   └── WinScene.unity ....... results screen; holds a WinScreen
 │   ├── Scripts/
